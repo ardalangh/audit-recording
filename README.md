@@ -158,12 +158,42 @@ a PR, run:
 bash tests/smoke_test.sh
 ```
 
-## Credits
+## Standards and sources
 
-The workflow, thresholds and checklist build on prior work. See [`docs/research/`](docs/research) for notes on each
-source, including serebano/video-ux-audit, OneRedOak/claude-code-workflows (design-review), Vercel's Web
-Interface Guidelines, pbakaus/impeccable, emilkowalski's animation review skill, and published guidance from
-Apple, Google (Material, RAIL, Core Web Vitals), Microsoft and Nielsen Norman Group.
+Every threshold and platform rule in the skill cites a published source. The full tag-to-URL table is at the
+bottom of [`references/platforms.md`](skills/audit-recording/references/platforms.md), and each finding in a report
+names the check and source it relies on. The main ones:
+
+| Area | Source | Used for |
+|---|---|---|
+| Accessibility | [W3C WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/) | Contrast (1.4.3, 1.4.11), reflow at 320 px (1.4.10), flashing (2.3.1), motion (2.3.3) |
+| Response time | Nielsen Norman Group: [Response Times: The 3 Important Limits](https://www.nngroup.com/articles/response-times-3-important-limits/), [Progress Indicators](https://www.nngroup.com/articles/progress-indicators/), [Skeleton Screens 101](https://www.nngroup.com/articles/skeleton-screens/) | The 0.1 s / 1 s / 10 s limits and which loading indicator fits which wait |
+| Usability | Nielsen Norman Group: [10 Usability Heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) | Severity and the flow and feedback checks |
+| Web performance | Google web.dev: [RAIL](https://web.dev/articles/rail), [INP](https://web.dev/articles/inp), [LCP](https://web.dev/articles/lcp), [CLS](https://web.dev/articles/cls) | Interaction latency, load and layout-shift grades |
+| Web UI | [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines) | Mutation latency target and web interaction checks |
+| iOS and macOS | [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines), and Apple's docs on [hangs](https://developer.apple.com/documentation/xcode/understanding-hangs-in-your-app), [hitches](https://developer.apple.com/documentation/xcode/understanding-hitches-in-your-app) and [launch time](https://developer.apple.com/documentation/xcode/reducing-your-app-s-launch-time) | Layout, type, controls, progress and motion norms; hang and hitch-rate bands |
+| Android | [Android vitals: startup](https://developer.android.com/topic/performance/vitals/launch-time) and [slow / frozen frames](https://developer.android.com/topic/performance/vitals/render), [Android accessibility](https://developer.android.com/guide/topics/ui/accessibility/apps), [Material 3](https://m3.material.io/) | Startup and jank thresholds, touch targets, Material motion and type tokens |
+| Windows | Microsoft [Windows app design](https://learn.microsoft.com/en-us/windows/apps/design/) and [Fluent 2](https://fluent2.microsoft.design/) | Title bar, type, spacing, motion and targeting |
+| Electron | [Electron docs](https://www.electronjs.org/docs/latest/tutorial/performance) | White flash on open, custom title bars, main-process blocking |
+
+WCAG is a formal W3C standard. The rest are the platform owners' own guidelines, or research-based guidance, and
+the skill treats them as norms to compare against, not pass/fail rules. Material 3 layout values could not be
+fetched directly and were cross-checked against SAP Fiori for Android; they are marked for verification.
+
+### Prior art
+
+The review method, severity scale, honesty rules and checklist were built after reading these open-source review
+skills and agents. Notes on what was taken from each are in
+[`docs/research/research-ux-skills.md`](docs/research/research-ux-skills.md).
+
+- [serebano/video-ux-audit](https://github.com/serebano/video-ux-audit): the closest existing video audit skill
+- [OneRedOak/claude-code-workflows](https://github.com/OneRedOak/claude-code-workflows) (design-review agent)
+- [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines)
+- [pbakaus/impeccable](https://github.com/pbakaus/impeccable)
+- [emilkowalski/skill](https://github.com/emilkowalski/skill) (animation review)
+- [Dammyjay93/interface-design](https://github.com/Dammyjay93/interface-design)
+- [EliaAlberti/ux-audit-skill](https://github.com/EliaAlberti/ux-audit-skill)
+- [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
 
 ## License
 
