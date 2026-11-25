@@ -1,5 +1,7 @@
 # audit-recording
 
+[![ci](https://github.com/ardalangh/audit-recording/actions/workflows/ci.yml/badge.svg)](https://github.com/ardalangh/audit-recording/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A [Claude Code](https://code.claude.com) skill that audits a **screen recording** of a mobile, web or desktop app.
 It reports UI bugs, visual design problems and **measured latency**. Each finding includes timestamps,
 frame evidence and a mock-up of the fix.
