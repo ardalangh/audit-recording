@@ -229,6 +229,13 @@ def decode_passes(video, w, h, cache):
             aligned += 1
         if 0 < i < n:
             diffs[i] = pa.stdout[k * cells:(k + 1) * cells]
+    # Some ffmpeg builds (seen on Ubuntu's 8.0) range-convert after the lut, so an unchanged cell
+    # comes out as ~2 instead of 0. Take the lowest value in the whole diff stream as "no change".
+    present = [d for d in diffs if d]
+    floor = min(min(d) for d in present) if present else 0
+    if floor:
+        table = bytes(max(0, v - floor) for v in range(256))
+        diffs = [d.translate(table) if d else d for d in diffs]
     os.makedirs(cache, exist_ok=True)
     with open(os.path.join(cache, "thumbs.bin"), "wb") as f:
         f.write(pb.stdout[:n * tw * th])
