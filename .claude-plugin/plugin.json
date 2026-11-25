@@ -1,0 +1,15 @@
+{
+  "name": "audit-recording",
+  "displayName": "Audit Recording",
+  "version": "1.0.0",
+  "description": "Audit a screen recording of a mobile, web or desktop app: UI bugs, design issues and measured latency, reported as a page with marked screenshots and HTML mock-ups of each fix.",
+  "author": {
+    "name": "ardalangh",
+    "url": "https://github.com/ardalangh"
+  },
+  "homepage": "https://github.com/ardalangh/audit-recording",
+  "repository": "https://github.com/ardalangh/audit-recording",
+  "license": "MIT",
+  "keywords": ["ux", "ui", "design-review", "latency", "screen-recording", "video", "accessibility", "qa"],
+  "skills": "./skills/"
+}

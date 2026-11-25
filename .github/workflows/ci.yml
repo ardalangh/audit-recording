@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install ffmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - name: Check manifests are valid JSON
+        run: |
+          python -m json.tool .claude-plugin/plugin.json > /dev/null
+          python -m json.tool .claude-plugin/marketplace.json > /dev/null
+      - name: Check versions match
+        run: |
+          python - <<'PY'
+          import json, re
+          p = json.load(open(".claude-plugin/plugin.json"))["version"]
+          m = json.load(open(".claude-plugin/marketplace.json"))["plugins"][0]["version"]
+          s = re.search(r'version:\s*"([^"]+)"', open("skills/audit-recording/SKILL.md").read()).group(1)
+          assert p == m == s, f"versions differ: plugin {p}, marketplace {m}, SKILL.md {s}"
+          print("version", p)
+          PY
+      - name: Smoke test
+        run: bash tests/smoke_test.sh
