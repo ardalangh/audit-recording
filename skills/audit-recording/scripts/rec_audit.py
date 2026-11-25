@@ -199,11 +199,13 @@ def decode_passes(video, w, h, cache):
     else:
         dw, dh = -2, DIFF_LONG
         tw, th = 90, 160
+    # accurate_rnd: without it some ffmpeg builds (Ubuntu's 8.0) shrink an all-zero diff to 2, not 0,
+    # and every frame looks changed.
     vf_a = ("scale=%d:%d,format=gray,tblend=all_mode=difference,"
-            "lut=y='if(gt(val,%d),255,0)',scale=%d:%d:flags=area,showinfo" % (dw, dh, PIX_THRESH, gw, gh))
+            "lut=y='if(gt(val,%d),255,0)',scale=%d:%d:flags=area+accurate_rnd,showinfo" % (dw, dh, PIX_THRESH, gw, gh))
     pa = run(["ffmpeg", "-hide_banner", "-nostats", "-i", video, "-an", "-fps_mode", "passthrough",
               "-vf", vf_a, "-f", "rawvideo", "-pix_fmt", "gray", "-"])
-    vf_b = "scale=%d:%d:flags=area,format=gray,showinfo" % (tw, th)
+    vf_b = "scale=%d:%d:flags=area+accurate_rnd,format=gray,showinfo" % (tw, th)
     pb = run(["ffmpeg", "-hide_banner", "-nostats", "-i", video, "-an", "-fps_mode", "passthrough",
               "-vf", vf_b, "-f", "rawvideo", "-pix_fmt", "gray", "-"])
     if pb.returncode != 0 or not pb.stdout:
@@ -229,13 +231,6 @@ def decode_passes(video, w, h, cache):
             aligned += 1
         if 0 < i < n:
             diffs[i] = pa.stdout[k * cells:(k + 1) * cells]
-    # Some ffmpeg builds (seen on Ubuntu's 8.0) range-convert after the lut, so an unchanged cell
-    # comes out as ~2 instead of 0. Take the lowest value in the whole diff stream as "no change".
-    present = [d for d in diffs if d]
-    floor = min(min(d) for d in present) if present else 0
-    if floor:
-        table = bytes(max(0, v - floor) for v in range(256))
-        diffs = [d.translate(table) if d else d for d in diffs]
     os.makedirs(cache, exist_ok=True)
     with open(os.path.join(cache, "thumbs.bin"), "wb") as f:
         f.write(pb.stdout[:n * tw * th])

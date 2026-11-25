@@ -4,6 +4,12 @@ All notable changes are listed here. Versions follow [Semantic Versioning](https
 the version lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the
 `metadata.version` field of `skills/audit-recording/SKILL.md`. Bump all three together.
 
+## 1.0.1 - 2026-11-25
+
+- Fix change detection on Linux: Ubuntu's ffmpeg 8.0 build shrinks an all-zero diff to 2 instead of 0
+  unless the scaler uses `accurate_rnd`, which made every frame look changed. Both downscales now use it.
+- CI: smoke test on Ubuntu and macOS (Python 3.9 to 3.13) with a deterministic synthetic recording.
+
 ## 1.0.0 - 2026-11-25
 
 First public release.

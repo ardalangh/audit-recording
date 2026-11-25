@@ -10,7 +10,7 @@
       "name": "audit-recording",
       "source": "./",
       "description": "Audit a screen recording of a mobile, web or desktop app: UI bugs, design issues and measured latency, with marked screenshots and mock-ups of each fix.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "category": "development",
       "tags": ["ux", "design-review", "latency", "screen-recording"]
     }

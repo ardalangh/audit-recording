@@ -6,7 +6,7 @@ license: MIT
 compatibility: Requires Python 3.9+ and ffmpeg/ffprobe on PATH. Built for Claude Code; the published-page step uses the Artifact tool when available and falls back to a local HTML file.
 metadata:
   author: ardalangh
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Audit a screen recording
