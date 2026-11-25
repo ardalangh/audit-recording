@@ -40,3 +40,11 @@ jobs:
           PY
       - name: Smoke test
         run: bash tests/smoke_test.sh
+        env:
+          SMOKE_WORK: ${{ runner.temp }}/smoke
+      - name: Upload audit output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-${{ matrix.os }}-${{ matrix.python }}
+          path: ${{ runner.temp }}/smoke

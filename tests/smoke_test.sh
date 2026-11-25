@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
-# Smoke test: build a synthetic "app" recording with ffmpeg, run every script command on it,
+# Smoke test: build a synthetic "app" recording (tests/make_demo.py), run every script command on it,
 # render a report from a minimal findings.json, and check that the expected files exist.
 # Needs: bash, python3 (3.9+), ffmpeg, ffprobe.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SKILL="$ROOT/skills/audit-recording"
-WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+WORK="${SMOKE_WORK:-$(mktemp -d)}"
+mkdir -p "$WORK"
+[ -n "${SMOKE_WORK:-}" ] || trap 'rm -rf "$WORK"' EXIT
 
 echo "== frontmatter"
 python3 "$ROOT/tests/check_frontmatter.py" "$SKILL/SKILL.md"
 
 echo "== synthetic recording"
-# 390x844 phone-sized screen, 30 fps, 4 s:
-#   t=1.5 s a blue "button response" bar appears (local change),
-#   t=2.5 s the whole screen turns grey (navigation).
-ffmpeg -v error -y \
-  -f lavfi -i "color=c=white:s=390x844:r=30:d=4" \
-  -f lavfi -i "color=c=0x3355ff:s=300x60:r=30:d=4" \
-  -f lavfi -i "color=c=0xdddddd:s=390x844:r=30:d=4" \
-  -filter_complex "[0][1]overlay=45:600:enable='gte(t,1.5)'[a];[a][2]overlay=0:0:enable='gte(t,2.5)'" \
-  -c:v libx264 -pix_fmt yuv420p "$WORK/demo.mp4"
+python3 "$ROOT/tests/make_demo.py" "$WORK/demo.mp4"
 
 OUT="$WORK/audit"
 echo "== analyze"
@@ -36,7 +29,9 @@ python3 "$SKILL/scripts/rec_audit.py" frames "$OUT" --at 0.5,1.6 --crop 0,560,39
 for f in analysis.md analysis.json measurements.md; do
   [ -s "$OUT/$f" ] || { echo "missing $f"; exit 1; }
 done
-grep -q "1.5" "$OUT/analysis.md" || { echo "analysis.md does not mention the 1.5 s change"; exit 1; }
+grep -q "00:01.500" "$OUT/analysis.md" || { echo "analysis.md does not show the change at 1.5 s"; exit 1; }
+grep -q "00:02.500" "$OUT/analysis.md" || { echo "analysis.md does not show the change at 2.5 s"; exit 1; }
+grep -q "First visible change: +500 ms" "$OUT/measurements.md" || { echo "measure did not find +500 ms"; exit 1; }
 
 echo "== render report"
 cat > "$OUT/findings.json" <<'JSON'
