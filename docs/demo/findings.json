@@ -1,0 +1,322 @@
+{
+ "title": "Pebblebook Profile Save",
+ "subject": "A 7.6 s iPhone recording of a fictional notes app: the user edits their profile, taps Save, then goes back to Settings. Show-touches was on, so the tap time is measured, not inferred.",
+ "summary": "Saving the profile is the slowest and least clear moment in the flow. After the tap, nothing on screen changes for 1.5 s; then a toast confirms with a different name for the thing just saved. The settings list uses that second name too. The helper text under the form is very faint, and the tab bar is icons only. The demo app is synthetic and its issues were planted to show what the skill reports.",
+ "top_fixes": [
+  "Show a pressed state on Save at once and a \"Saving…\" state after 100 ms (F-01).",
+  "Call it \"Profile\" everywhere: title, toast and Settings row (F-02).",
+  "Darken the helper text to the label colour or darker (F-03)."
+ ],
+ "timeline": [
+  {
+   "time": 0.0,
+   "screen": "Profile",
+   "change": "Form filled in"
+  },
+  {
+   "time": 1.0,
+   "screen": "Profile",
+   "change": "Touch dot on Save (input)"
+  },
+  {
+   "time": 2.533,
+   "screen": "Profile",
+   "change": "Toast \"Account updated\""
+  },
+  {
+   "time": 4.133,
+   "screen": "Profile",
+   "change": "Toast gone"
+  },
+  {
+   "time": 4.633,
+   "screen": "Settings",
+   "change": "Back to Settings"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-01",
+   "severity": "P1",
+   "confidence": "High",
+   "check": "LAT-FEEDBACK",
+   "title": "Save gives no feedback for 1.5 s",
+   "screen": "Profile",
+   "time": "00:01.000-00:02.533",
+   "evidence": [
+    {
+     "time": 1.0,
+     "caption": "The tap (show-touches dot). The button itself does not change.",
+     "marks": [
+      {
+       "x": 32,
+       "y": 1496,
+       "w": 716,
+       "h": 104,
+       "label": "1"
+      }
+     ]
+    },
+    {
+     "time": 2.4,
+     "caption": "1.4 s later: still unchanged, no spinner or pressed state.",
+     "marks": [
+      {
+       "x": 32,
+       "y": 1496,
+       "w": 716,
+       "h": 104,
+       "label": "1"
+      }
+     ]
+    }
+   ],
+   "observation": "`measure` from the touch at 00:01.000: first visible change +1533 ms (the toast). Nothing in the window changed before that; the button has no pressed or busy state. Timing resolution ±33 ms.",
+   "expected": "Visible feedback within 100 ms of a tap, and a progress state for any wait over about 1 s.",
+   "impact": "The tap looks ignored, so people tap again (double submits) or leave before the save lands.",
+   "cause": "The Save button has no :active or busy style (seen in the code).",
+   "fix": {
+    "summary": "Darken Save on press, then switch it to a disabled \"Saving…\" state with a spinner until the request returns.",
+    "mock": {
+     "caption": "Save at 0 ms (pressed) and after 100 ms (saving), using the app's own colours.",
+     "css": ":host{--bg:#f6f3ee;--ink:#1d1b19;--muted:#7a736b;--line:#eee9e1;--brand:#2f6b4f;--card:#fff;font:15px/1.4 -apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:var(--ink)}.scr{background:var(--bg);padding:16px;border-radius:12px;display:grid;gap:12px}.btn{height:52px;border-radius:14px;background:var(--brand);color:#fff;font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px}.press{background:#24553e;transform:scale(.98)}.busy{background:#5d8a74}.spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff}.t{font-size:12px;color:var(--muted)}",
+     "html": "<div class='scr'><div class='t'>0 ms: pressed</div><div class='btn press chg'>Save</div><div class='t'>100 ms until done: saving</div><div class='btn busy chg'><span class='spin'></span>Saving…</div></div>"
+    },
+    "changes": [
+     {
+      "what": "Save during the request",
+      "before": "No change",
+      "after": "Pressed, then \"Saving…\" with spinner, disabled"
+     }
+    ],
+    "code_refs": [
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 43,
+      "note": "the Save button: no pressed or busy state"
+     }
+    ],
+    "steps": [
+     "Add an :active style (darker, 98% scale).",
+     "On submit, disable the button and show \"Saving…\" with a spinner after 100 ms.",
+     "Restore it when the request finishes or fails."
+    ],
+    "effort": "S",
+    "verify": "Re-record with show-touches on and run `measure`: first change within 100 ms of the tap."
+   }
+  },
+  {
+   "id": "F-02",
+   "severity": "P2",
+   "confidence": "High",
+   "check": "TERM-DRIFT",
+   "title": "The same screen is called Profile and Account",
+   "screen": "Profile, Settings",
+   "time": "00:02.533, 00:04.633",
+   "evidence": [
+    {
+     "time": 3.0,
+     "caption": "Title says Profile (1); the toast says Account (2).",
+     "marks": [
+      {
+       "x": 320,
+       "y": 118,
+       "w": 140,
+       "h": 54,
+       "label": "1"
+      },
+      {
+       "x": 231,
+       "y": 1371,
+       "w": 317,
+       "h": 105,
+       "label": "2"
+      }
+     ]
+    },
+    {
+     "time": 5.5,
+     "caption": "Settings lists it as Account.",
+     "marks": [
+      {
+       "x": 32,
+       "y": 262,
+       "w": 716,
+       "h": 70,
+       "label": "3"
+      }
+     ]
+    }
+   ],
+   "observation": "The screen title is \"Profile\", the save toast reads \"Account updated\", and the Settings row that opens it is \"Account\".",
+   "expected": "One name for one thing across title, confirmation and navigation.",
+   "impact": "People can't tell whether they changed their public profile or their account (email, password), and search for the wrong row later.",
+   "fix": {
+    "summary": "Use \"Profile\" in all three places and make the toast say what was saved.",
+    "mock": {
+     "caption": "Settings row, screen title and toast with one name.",
+     "css": ":host{--bg:#f6f3ee;--ink:#1d1b19;--muted:#7a736b;--line:#eee9e1;--brand:#2f6b4f;--card:#fff;font:15px/1.4 -apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:var(--ink)}.scr{background:var(--bg);padding:16px;border-radius:12px;display:grid;gap:12px}.card{background:var(--card);border-radius:14px;padding:0 16px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:16px}.row:last-child{border:0}.chev{color:#b5aea5}.h{text-align:center;font-weight:600;font-size:17px}.toast{justify-self:center;background:var(--ink);color:#fff;border-radius:12px;padding:12px 18px}",
+     "html": "<div class='scr'><div class='card'><div class='row'><span class='chg'>Profile</span><span class='chev'>›</span></div><div class='row'><span>Notifications</span><span class='chev'>›</span></div></div><div class='h'>Profile</div><div class='toast chg'>Profile saved</div></div>"
+    },
+    "changes": [
+     {
+      "what": "Toast",
+      "before": "Account updated",
+      "after": "Profile saved"
+     },
+     {
+      "what": "Settings row",
+      "before": "Account",
+      "after": "Profile"
+     }
+    ],
+    "code_refs": [
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 61,
+      "note": "toast text"
+     },
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 48,
+      "note": "Settings row label"
+     }
+    ],
+    "effort": "S",
+    "verify": "Walk Settings > Profile > Save and read every label: one name."
+   }
+  },
+  {
+   "id": "F-03",
+   "severity": "P3",
+   "confidence": "High",
+   "check": "CONTRAST-TEXT",
+   "title": "Helper text under the form is barely visible",
+   "screen": "Profile",
+   "time": "00:00.000-00:04.600",
+   "evidence": [
+    {
+     "time": 0.5,
+     "caption": "12 px helper text in very light grey.",
+     "marks": [
+      {
+       "x": 48,
+       "y": 962,
+       "w": 560,
+       "h": 40,
+       "label": "1"
+      }
+     ]
+    }
+   ],
+   "observation": "The line \"Your name and bio are shown on notes you share.\" is ~12 pt light grey on the beige background. From video it looks well below 4.5:1; the code confirms #cfcac3 on #f6f3ee, 1.47:1.",
+   "expected": "Body and helper text at 4.5:1 or more (WCAG 1.4.3).",
+   "impact": "The one sentence that says the bio is public is the hardest to read, so people share details they meant to keep private.",
+   "fix": {
+    "summary": "Use a darker grey (#6b645c, 5.3:1) for helper text.",
+    "mock": {
+     "caption": "Helper text at #6b645c on the app background.",
+     "css": ":host{--bg:#f6f3ee;--ink:#1d1b19;--muted:#7a736b;--line:#eee9e1;--brand:#2f6b4f;--card:#fff;font:15px/1.4 -apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:var(--ink)}.scr{background:var(--bg);padding:16px;border-radius:12px;display:grid;gap:12px}.card{background:var(--card);border-radius:14px;padding:4px 16px}.lab{font-size:12px;color:var(--muted)}.val{font-size:16px;padding-bottom:10px}.help{font-size:12px;color:#6b645c;padding:0 16px}",
+     "html": "<div class='scr'><div class='card'><div class='lab'>Bio</div><div class='val'>Writes things down so they stop rattling around.</div></div><div class='help chg'>Your name and bio are shown on notes you share.</div></div>"
+    },
+    "changes": [
+     {
+      "what": "Helper text colour",
+      "before": "#cfcac3 (1.47:1)",
+      "after": "#6b645c (5.27:1)"
+     }
+    ],
+    "code_refs": [
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 18,
+      "note": ".help color #cfcac3"
+     }
+    ],
+    "effort": "S",
+    "verify": "Check the pair in a contrast checker: 4.5:1 or more."
+   }
+  },
+  {
+   "id": "F-04",
+   "severity": "P3",
+   "confidence": "Medium",
+   "check": "ICON-LABEL",
+   "title": "Tab bar icons have no labels",
+   "screen": "Settings",
+   "time": "00:04.633-00:07.600",
+   "evidence": [
+    {
+     "time": 5.5,
+     "caption": "Four icon-only tabs; the pencil and magnifier are small and grey.",
+     "marks": [
+      {
+       "x": 40,
+       "y": 1528,
+       "w": 700,
+       "h": 80,
+       "label": "1"
+      }
+     ]
+    }
+   ],
+   "observation": "The tab bar shows four glyphs with no text. Inactive icons are light grey (#9c958c on white, 2.96:1 per the code).",
+   "expected": "iOS tab bars pair each icon with a short label; icons that are UI components need 3:1.",
+   "impact": "People have to guess what the pencil and magnifier open, and the faint icons are hard to see in sunlight.",
+   "fix": {
+    "summary": "Add a one-word label under each icon and darken inactive icons.",
+    "mock": {
+     "caption": "Tab bar with labels; the label words are a guess at each tab's purpose.",
+     "css": ":host{--bg:#f6f3ee;--ink:#1d1b19;--muted:#7a736b;--line:#eee9e1;--brand:#2f6b4f;--card:#fff;font:15px/1.4 -apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:var(--ink)}.scr{background:var(--bg);padding:16px;border-radius:12px;display:grid;gap:12px}.tabs{background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 0 14px;border-radius:12px}.tab{display:grid;justify-items:center;gap:2px;color:#7a736b}.tab b{font-size:22px;font-weight:400}.tab span{font-size:10px;font-weight:600}.on{color:var(--brand)}",
+     "html": "<div class='tabs'><div class='tab chg'><b>⌂</b><span>Notes</span></div><div class='tab chg'><b>✎</b><span>Write</span></div><div class='tab chg'><b>⌕</b><span>Search</span></div><div class='tab on chg'><b>⚙</b><span>Settings</span></div></div>"
+    },
+    "changes": [
+     {
+      "what": "Tabs",
+      "before": "Icons only",
+      "after": "Icon + label: Notes, Write, Search, Settings"
+     },
+     {
+      "what": "Inactive colour",
+      "before": "#9c958c",
+      "after": "#7a736b"
+     }
+    ],
+    "code_refs": [
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 57,
+      "note": "tab bar markup, icons only"
+     },
+     {
+      "file": "docs/demo/app/index.html",
+      "line": 25,
+      "note": ".tabs color #9c958c"
+     }
+    ],
+    "effort": "S",
+    "verify": "Ask someone new what each tab does before tapping it."
+   }
+  }
+ ],
+ "positives": [
+  "Clean, consistent card layout and spacing on both screens.",
+  "The save result is confirmed with a toast rather than silently."
+ ],
+ "evidence_limits": [
+  "Synthetic recording built from static screens: there is no real motion or transition timing to judge.",
+  "Timing resolution ±33 ms (30 fps)."
+ ],
+ "not_assessable": [
+  "VoiceOver labels and focus order",
+  "Dynamic Type",
+  "Haptics",
+  "Error and offline states (not recorded)"
+ ],
+ "dismissed": [
+  "E03 at 00:04.133 (toast disappearing) is expected behaviour, not a revert."
+ ],
+ "next_checks": [
+  "Record a failed save (offline) to see the error state."
+ ]
+}

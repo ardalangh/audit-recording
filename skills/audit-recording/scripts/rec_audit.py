@@ -1074,7 +1074,7 @@ def cmd_measure(a):
             L.append("- First substantial change (response): +%d ms [%s vs 100 ms / 1 s]"
                      % (rel(response["first"]), verdict(rel(response["first"]), 100, 1000)))
         elif response is None:
-            L.append("- No substantial change (>= 3%% of screen or a >= 8%% area) in the window: the result may be "
+            L.append("- No substantial change (>= 3% of screen or a >= 8% area) in the window: the result may be "
                      "small (toast, label, counter) or missing. Check the strip.")
         if settled is not None:
             L.append("- Visually settled: +%d ms at %s (then %d ms or more without change) [%s vs 1 s action / 3 s view]"

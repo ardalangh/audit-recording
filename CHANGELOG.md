@@ -4,6 +4,16 @@ All notable changes are listed here. Versions follow [Semantic Versioning](https
 the version lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the
 `metadata.version` field of `skills/audit-recording/SKILL.md`. Bump all three together.
 
+## 1.1.0 - 2026-11-25
+
+- Demo in `docs/demo`: a recording of a fictional app with planted issues, the full script output, findings
+  and the rendered report, plus the script that rebuilds the recording. The README shows the report.
+- Report: phone-shaped frames are capped in height with the close-up beside them, and close-ups follow the
+  marks' shape instead of the frame's, so a wide button on a tall screen gets a wide close-up. Ring size
+  follows the frame's long edge.
+- `measure`: fix a literal "3%%" in the no-substantial-change note.
+- SKILL.md: the mark check now says report images may be scaled.
+
 ## 1.0.1 - 2026-11-25
 
 - Fix change detection on Linux: Ubuntu's ffmpeg 8.0 build shrinks an all-zero diff to 2 instead of 0

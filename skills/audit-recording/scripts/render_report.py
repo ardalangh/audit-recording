@@ -39,14 +39,18 @@ def e(s):
 
 
 def zoom_box(marks, w, h):
-    """Padded view box around all marks, kept to the frame's aspect ratio where possible."""
+    """Padded view box around all marks. Its shape follows the marks (between 0.8:1 and 2.2:1),
+    not the frame, so a wide button on a tall phone frame gets a wide close-up."""
     x0 = min(m["x"] for m in marks); y0 = min(m["y"] for m in marks)
     x1 = max(m["x"] + m["w"] for m in marks); y1 = max(m["y"] + m["h"] for m in marks)
     bw, bh = x1 - x0, y1 - y0
-    aspect = w / float(h)
-    zw = max(bw * 1.8, w * 0.22)
-    zh = max(bh * 1.8, zw / aspect)
-    zw = max(zw, zh * aspect * 0.75)
+    pad = 0.3 * max(bw, bh, 0.1 * min(w, h))
+    floor = 0.22 * min(w, h)
+    zw, zh = max(bw + 2 * pad, floor), max(bh + 2 * pad, floor)
+    if zw / zh > 2.2:
+        zh = zw / 2.2
+    elif zw / zh < 0.8:
+        zw = zh * 0.8
     zw, zh = min(zw, w), min(zh, h)
     cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
     zx = min(max(0, cx - zw / 2), w - zw)
@@ -78,7 +82,7 @@ def marks_svg(marks, scale):
 
 
 def figure(img_rel, w, h, marks, caption, t_label, alt):
-    s = w / 900.0
+    s = max(w, h) / 900.0  # ring and badge size follow the long edge, so portrait frames get visible marks
     main = ('<svg class="shot" viewBox="0 0 %d %d" role="img" aria-label="%s">'
             '<image href="%s" x="0" y="0" width="%d" height="%d"/>%s</svg>'
             % (w, h, e(alt), e(img_rel), w, h, marks_svg(marks, s) if marks else ""))
@@ -90,8 +94,9 @@ def figure(img_rel, w, h, marks, caption, t_label, alt):
                 'aria-label="Close-up of the marked area"><image href="%s" x="0" y="0" width="%d" height="%d"/>%s</svg>'
                 '<figcaption>Close-up</figcaption></figure>'
                 % (zx, zy, zw, zh, zw / zh, e(img_rel), w, h, marks_svg(marks, zs)))
-    return ('<div class="evidence"><figure class="frame">%s<figcaption><span class="tc">%s</span> %s</figcaption>'
-            '</figure>%s</div>' % (main, e(t_label), e(caption), zoom))
+    shape = " portrait" if h > w else ""
+    return ('<div class="evidence%s"><figure class="frame">%s<figcaption><span class="tc">%s</span> %s</figcaption>'
+            '</figure>%s</div>' % (shape, main, e(t_label), e(caption), zoom))
 
 
 MOCK_BASE = """<style>:host{display:block;contain:content}*{box-sizing:border-box}
@@ -351,6 +356,10 @@ figure {{ margin: 0; display: grid; gap: 6px; }}
 figcaption {{ font-size: 13px; color: var(--muted); }}
 .shot, .zoom svg {{ width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); }}
 .zoom {{ max-width: 360px; }}
+/* phone-shaped frames: cap the height and put the close-up beside the frame */
+.evidence.portrait {{ grid-template-columns: auto minmax(0, 1fr); align-items: start; }}
+.evidence.portrait .shot {{ height: min(520px, 70vh); width: auto; max-width: 100%; }}
+.evidence.portrait .frame figcaption {{ max-width: 260px; }}
 .halo {{ fill: none; stroke: var(--mark-halo); stroke-opacity: 0.9; }}
 .ring {{ fill: none; stroke: var(--mark); }}
 .badge {{ fill: var(--mark); stroke: var(--mark-halo); }}
@@ -398,6 +407,7 @@ th {{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color:
   .overview, .f-body, .lower {{ grid-template-columns: minmax(0, 1fr); }}
   .fix {{ border-left: 0; border-top: 1px solid var(--line); }}
   .zoom {{ max-width: none; }}
+  .evidence.portrait {{ grid-template-columns: minmax(0, 1fr); }}
 }}
 @media (prefers-reduced-motion: no-preference) {{ html {{ scroll-behavior: smooth; }} }}
 </style>

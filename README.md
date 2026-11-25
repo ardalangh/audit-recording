@@ -17,6 +17,12 @@ it is the **fix as an HTML/CSS mock-up** of that part of the screen with the cha
 code is in your workspace, the mock-ups use its real colour tokens, fonts and copy, and each fix lists the file
 and line to change.
 
+![An audit page: the Save button circled on the recorded frame, with a close-up, next to an HTML mock-up of the fixed button](docs/demo/report-screenshot.png)
+
+*Output from the [demo](docs/demo): a 7.6 s recording of a made-up notes app. The skill measured 1.5 s of
+silence after tapping Save, circled the button, and proposed a pressed and "Saving…" state, built from the
+app's own CSS.*
+
 ## What it catches
 
 - **Latency:** time from input to first feedback, to the result, and to a settled screen. Also frozen waits with
@@ -91,6 +97,12 @@ python3 $S/rec_audit.py strip   recording-audits/checkout --from 4.6 --to 6.0 --
 python3 $S/rec_audit.py frames  recording-audits/checkout --at 5.44,8.09
 ```
 
+## Demo
+
+[`docs/demo`](docs/demo) has a complete worked example: the recording, the script output, the findings
+Claude wrote, and the rendered report. It uses a fictional app with four planted issues, so you can compare
+what the skill found against what was planted.
+
 ## Get better evidence
 
 - **Show touches and clicks** so input times are measured, not inferred:
@@ -132,6 +144,7 @@ skills/audit-recording/
   scripts/rec_audit.py   measurement: analyze, measure, strip, frames
   scripts/render_report.py   findings.json -> report page
   references/            latency thresholds, checklist, platform norms, report format
+docs/demo/               worked example: recording, analysis, findings, rendered report
 docs/research/           the research notes the skill was built from
 tests/                   smoke test on a synthetic recording (runs in CI)
 ```

@@ -6,3 +6,4 @@ recording-audits/
 *.mov
 *.mp4
 *.webm
+!docs/demo/recording.mp4

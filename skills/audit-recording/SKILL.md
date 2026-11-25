@@ -6,7 +6,7 @@ license: MIT
 compatibility: Requires Python 3.9+ and ffmpeg/ffprobe on PATH. Built for Claude Code; the published-page step uses the Artifact tool when available and falls back to a local HTML file.
 metadata:
   author: ardalangh
-  version: "1.0.1"
+  version: "1.1.0"
 ---
 
 # Audit a screen recording
@@ -148,6 +148,8 @@ problem and a zoomed close-up on the left, and the suggested fix on the right.
 2. **Render:** `python3 ${CLAUDE_SKILL_DIR}/scripts/render_report.py <output folder>`. It writes
    `report/index.html`, `report/img/*.jpg` and `report/report.md`, then prints the publish arguments.
 3. **Check the marks once.** Draw each mark's rectangle onto its frame with ffmpeg `drawbox` and look.
+   Marks are in displayed-frame pixels; `report/img/` frames may be scaled down (long edge 1568), so scale the
+   rectangles by the image width over the frame width, or draw on `frames --at` output instead.
    Fix any rectangle that misses its target, then re-render. Do not skip this: a circle in the wrong
    place is a false finding.
 4. **Publish.**
